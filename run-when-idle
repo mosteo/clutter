@@ -1,0 +1,34 @@
+#!/bin/bash
+
+function usage() {
+    echo "run-when-idle <seconds> <program>"
+    exit 1
+}
+
+[ "$2" != "" ] || usage
+[ "$1" != "" ] || usage
+
+delay=$1
+program=$2
+
+child=0
+
+while true; do
+    sleep 1s
+    if [ $((`xprintidle`/1000)) -lt $delay ]; then
+        if [ "$child" != "0" ]; then
+            echo -e "\e[1;33m`date`:" "Stopping (ran for $(seconds2date $(ttoc)) seconds)..." "[$program]\e[0;37m"
+            kill $child 2>/dev/null
+            sleep 5s
+            [ -d /proc/$child ] && echo -e "\e[1;31mTerminating..." "[$program]\e[0;37m" && kill -9 $child 2>/dev/null
+            child=0
+        fi
+    else
+        if [ "$child" == "0" ]; then
+            echo -e "\e[1;32m`date`:" Launching... "[$program]\e[0;37m"
+            ttic    
+            $program &
+            child=$!
+        fi
+    fi
+done

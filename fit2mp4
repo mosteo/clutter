@@ -1,0 +1,60 @@
+#!/bin/bash
+# USAGE
+# fit2mp4 <file> <size> [--fast] [opts for ffmpeg...]
+# Example scaling: -vf scale=iw*.5:ih*.5 (iw, ih are original, understood by ffmpeg)
+
+set -o errexit
+set -o nounset
+
+lo=0
+hi=51
+best=51
+
+[ "$1" == "" ] && { echo Missing source;      exit 1; }
+[ "$2" == "" ] && { echo Missing target size; exit 1; }
+
+src="$1"
+target=`echo $2 | numfmt --from=iec --to=none`
+
+shift
+shift
+
+if [ "${3:-}" == "--fast" ]; then
+	echo Using fast encoding
+	enc=ultrafast
+	shift
+else
+	enc=slow
+fi
+
+while true; do
+	mid=$(( ($hi+$lo)/2 ))
+	dst="${src%.*}.$mid.mp4"
+
+	echo -n Encoding at quality "$lo [${mid}] $hi... "
+	ffmpeg -loglevel warning -y -i "$src" -fs $target -strict -2 -c:v libx264 -crf $mid -preset $enc "$@" "$dst"
+	size=`stat --printf="%s" "$dst"`
+
+	if [ $size -gt $target ]; then
+		lo=$(( $mid + 1))
+		echo Too big
+	else
+		hi=$(( $mid - 1 ))
+		best=$mid
+		echo OK
+	fi
+
+	if [ $lo -gt $hi ]; then
+		echo Done at quality $best
+		exit 0
+	fi
+done
+
+# -c:a copy might be interesting but tends to fail depending on source
+
+#ultrafast,superfast,veryfast,faster,fast,medium,slow,slower,veryslow,placebo
+# crf 18 is considered visually lossless, default is 23, range is 0-51 (0=lossless)
+# for losless, -qp 0 is preferred over -crf
+# medium speed is default, slower is better
+# consider -tune film, animation, grain, stillimage, psnr, ssim, fastdecode, zerolatency 
+#  for specific cases
