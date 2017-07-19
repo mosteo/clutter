@@ -1,0 +1,9 @@
+#!/bin/bash
+# Extract video $1 from $2 to $3 into $4
+
+[ "$1" == "" ] && { echo "$0 <src> <start time> <end time> <dst>"; exit 1; }
+
+ini=`echo "$2" | sed -E 's/(.*):(.+):(.+)/\1*3600+\2*60+\3/;s/(.+):(.+)/\1*60+\2/' | bc`
+fin=`echo "$3" | sed -E 's/(.*):(.+):(.+)/\1*3600+\2*60+\3/;s/(.+):(.+)/\1*60+\2/' | bc`
+
+avconv -i "$1" -acodec copy -vcodec copy -ss $ini -t $(($fin - $ini + 1)) "$4"

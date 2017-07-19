@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ "$1" == "-h" ] && { human=true; shift; }
+
+[ -f /tmp/ttic-$UID-$1 ] || { echo 'No previous tic'; exit 1; }
+
+seconds=$(echo $((`date +%s` - `cat /tmp/ttic-$UID-$1`)))
+[ $human ] && date -u -d @${seconds} +"%T" || echo $seconds

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+[ "$1" != "" ] && path="$1" || path="."
+
+maxlen=30
+
+nice ionice -c3 \
+sudo find "$path" -xdev -mindepth 1 -maxdepth 1 -print0 | sudo xargs -0 du -shx | sort -hr | while read size name
+do
+	[ "$max" == "" ] && max=`numfmt --from=iec $size`
+	name=`basename "$name"`
+	bytes=`numfmt --from=iec $size`
+	pct=$((bytes * maxlen / max))
+
+	pluses=`head -c $pct < /dev/zero | tr '\0' '*'`
+	
+	printf "%${maxlen}s %8s  %s\n" "$pluses" $size "$name"
+done
+

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+[ "$1" == "" ] && { echo Missing source;      exit 1; }
+
+ffmpeg -i "$1" -strict -2 -c:v libx264 -crf 18 -preset slow "${1%.*}.mp4" 
+#ffmpeg -i "$1" -c:a copy -c:v libx264 -crf 18 -preset medium "${1%.*}.mp4" 
+
+# -c:a copy might be interesting but tends to fail depending on source
+
+#ultrafast,superfast,veryfast,faster,fast,medium,slow,slower,veryslow,placebo
+# crf 18 is considered visually lossless, default is 23, range is 0-51 (0=lossless)
+# for losless, -qp 0 is preferred over -crf
+# medium speed is default, slower is better
+# consider -tune film, animation, grain, stillimage, psnr, ssim, fastdecode, zerolatency 
+#  for specific cases

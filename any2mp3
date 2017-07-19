@@ -1,0 +1,22 @@
+#!/bin/bash
+
+[[ "$1" == "-v" ]] && qual="--preset standard" || \
+{ [[ "$1" == "-c" ]] && qual="--preset insane"   || \
+{ echo "Use -v or -c for 192vbr/320cbr as first option"; exit 1; } }
+
+shift
+
+# vbr192
+#qual="--preset standard"
+
+# cbr320
+#qual="--preset insane"
+
+echo Encoding with $qual
+
+for i in "$@"; do
+	echo converting $i...
+	ffmpeg -i "$i" "$i".wav && 
+		lame $qual "$i".wav "${i%.*}".mp3 &&
+		rm -f "$i".wav
+done
