@@ -1,5 +1,5 @@
 #!/bin/bash
 
 for file in *; do
-    [ -f "$HOME/bin/$file" ] && cp -alv "$HOME/bin/$file" .
+    [ -f "$HOME/bin/$file" ] && cp -aflv "$HOME/bin/$file" .
 done

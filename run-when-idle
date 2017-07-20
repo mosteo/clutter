@@ -9,7 +9,8 @@ function usage() {
 [ "$1" != "" ] || usage
 
 delay=$1
-program=$2
+shift
+program=$@
 
 child=0
 
